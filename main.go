@@ -25,7 +25,7 @@ func main() {
 	webhookUrl := os.Getenv("WEBHOOK_URL")
 
 	for _, e := range strings.Split(os.Getenv("ENDPOINT_URL"), ",") {
-		c, _ := getCotizacion(e)
+		c, _ := getCotizacion(strings.Trim(e, " "))
 		req, err := http.NewRequest(http.MethodPost, webhookUrl, bytes.NewBuffer(c))
 		if err != nil {
 			log.Fatal(err)
