@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: dolar-by-chat
 spec:
-  schedule: "0 13-16 * * *"
+  schedule: "0 13-18 * * 1-5"
   jobTemplate:
     spec:
       template:
@@ -15,7 +15,7 @@ spec:
             - name: ENDPOINT_URL
               value: ""
             - name: WEBHOOK_URL
-              value: """
+              value: ""
             imagePullPolicy: IfNotPresent
           restartPolicy: OnFailure
           
