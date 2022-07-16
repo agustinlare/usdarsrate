@@ -7,8 +7,11 @@ Manda la cotizacion del dolar a un chat via webhook
 Le pasas por enviroment un webhook (WEBHOOK_URL) y el endpoint (ENDPOINT_URL) que queres revisar.
 
 ```
-export WEBHOOK_URL="https://slack.googlchat.webhook.com"
+export WEBHOOK_URL="https://webhook.com/trucho1239801723123"
 export ENDPOINT_URL="/api/dolarblue"
+
+# Se pueden pasar separado por coma para obtener varias
+export ENDPOINT_URL="/api/dolarblue, /api/dolarbolsa"
 ```
 
 ## Docker / Kubernetes
