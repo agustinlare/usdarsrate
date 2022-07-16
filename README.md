@@ -45,17 +45,6 @@ URL: https://api-dolar-argentina.herokuapp.com/
 | GET | /api/chaco | Cotizacion dolar del Nuevo Banco del Chaco |
 | GET | /api/pampa | Cotizacion dolar del Banco de La Pampa |
 | GET | /api/mayorista | Cotizacion dolar Mayorista Bancos|
-| GET | /api/casas/caba/metropolis | Cotizacion dolar de Metrópolis Compañía Financiera S.A |
-| GET | /api/casas/caba/alpe | Cotizacion dolar de Cambio Alpe S.A |
-| GET | /api/casas/caba/vaccaro | Cotizacion dolar de Francisco Vaccaro S.A |
-| GET | /api/casas/caba/transatlantica | Cotizacion dolar de Transatlantica S.A |
-| GET | /api/casas/lp/tilos | Cotizacion dolar de Casa de Cambio Los Tilos S.A |
-| GET | /api/casas/mdp/jonestur | Cotizacion dolar de Jonestur S.A |
-| GET | /api/casas/mdp/moneta | Cotizacion dolar de La Moneta Cambio S.A|
-| GET | /api/casas/mdp/exchange | Cotizacion dolar de Mar del Plata Exchange S.A |
-| GET | /api/casas/rosario/daminato | Cotizacion dolar de Daminato Viajes y Cambios S.A. |
-| GET | /api/casas/mendoza/montemar | Cotizacion dolar de Montemar Compañía Financiera S.A |
-| GET | /api/casas/tucuman/maguitur | Cotizacion dolar de Maguitur S.A |
 | GET | /api/euro/nacion | Cotizacion del Euro del Banco Nación |
 | GET | /api/euro/galicia | Cotizacion del Euro del Banco Galicia |
 | GET | /api/euro/bbva | Cotizacion del Euro del Banco BBVA |
@@ -65,12 +54,6 @@ URL: https://api-dolar-argentina.herokuapp.com/
 | GET | /api/real/nacion | Cotizacion del Real del Banco Nación |
 | GET | /api/real/bbva | Cotizacion del Real del Banco BBVA |
 | GET | /api/real/chaco | Cotizacion del Real del Nuevo Banco del Chaco |
-| GET | /api/bcra/reservas | Reservas del BCRA en dólares |
-| GET | /api/bcra/circulante | Total de pesos en circulación |
-| GET | /api/evolucion/dolaroficial | Evolución mensual anualizada del dólar oficial |
-| GET | /api/evolucion/dolarblue | Evolución mensual anualizada del dólar blue |
-| GET | /api/evolucion/realoficial | Evolución mensual anualizada del Real oficial |
-| GET | /api/evolucion/eurooficial | Evolución mensual anualizada del Euro oficial |
 | GET | /api/all | Todos los valores disponbiles
 
 ## Creditos
