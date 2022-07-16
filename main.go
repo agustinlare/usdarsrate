@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -16,14 +17,41 @@ type Cotizacion struct {
 	Venta  string
 }
 
-type Newmessage struct {
+type Message struct {
 	Text string `json:"text"`
 }
 
 func main() {
 	webhookUrl := os.Getenv("WEBHOOK_URL")
-	res, err := http.Get("https://api-dolar-argentina.herokuapp.com" + os.Getenv("ENDPOINT_URL"))
 
+	for _, e := range strings.Split(os.Getenv("ENDPOINT_URL"), ",") {
+		c, _ := getCotizacion(e)
+		req, err := http.NewRequest(http.MethodPost, webhookUrl, bytes.NewBuffer(c))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		req.Header.Add("Content-Type", "application/json")
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+
+		if resp.StatusCode != 200 {
+			log.Fatal(resp.Status)
+		}
+
+	}
+
+	os.Exit(0)
+}
+
+func getCotizacion(e string) ([]byte, error) {
+	res, err := http.Get("https://api-dolar-argentina.herokuapp.com" + e)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,26 +61,8 @@ func main() {
 	decoder := json.NewDecoder(res.Body)
 	var data Cotizacion
 	_ = decoder.Decode(&data)
+	name := strings.Split(e, "/")[2]
+	msg := fmt.Sprintf("%s %s, Compra: %s, Venta: %s", name, data.Fecha, data.Compra, data.Venta)
 
-	msg := fmt.Sprintf("%s, Compra: %s, Venta: %s", data.Fecha, data.Compra, data.Venta)
-
-	chatBody, _ := json.Marshal(Newmessage{Text: msg})
-	req, err := http.NewRequest(http.MethodPost, webhookUrl, bytes.NewBuffer(chatBody))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-
-	if buf.String() != "ok" {
-		log.Fatal("exploto")
-	}
+	return json.Marshal(Message{Text: msg})
 }
