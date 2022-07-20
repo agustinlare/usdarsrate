@@ -7,51 +7,15 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
-
-type Cotizacion struct {
-	Fecha  string
-	Compra string
-	Venta  string
-}
 
 type Message struct {
 	Text string `json:"text"`
 }
 
 func main() {
-	webhookUrl := os.Getenv("WEBHOOK_URL")
-
-	for _, e := range strings.Split(os.Getenv("ENDPOINT_URL"), ",") {
-		c, _ := getCotizacion(strings.Trim(e, " "))
-		req, err := http.NewRequest(http.MethodPost, webhookUrl, bytes.NewBuffer(c))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		req.Header.Add("Content-Type", "application/json")
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(resp.Body)
-
-		if resp.StatusCode != 200 {
-			log.Fatal(resp.Status)
-		}
-
-	}
-
-	os.Exit(0)
-}
-
-func getCotizacion(e string) ([]byte, error) {
-	res, err := http.Get("https://api-dolar-argentina.herokuapp.com" + e)
+	res, err := http.Get(os.Getenv("ENDPOINT_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,10 +23,35 @@ func getCotizacion(e string) ([]byte, error) {
 	defer res.Body.Close()
 
 	decoder := json.NewDecoder(res.Body)
-	var data Cotizacion
+	var data map[string]interface{}
 	_ = decoder.Decode(&data)
-	name := strings.Split(e, "/")[2]
-	msg := fmt.Sprintf("%s %s, Compra: %s, Venta: %s", name, data.Fecha, data.Compra, data.Venta)
 
-	return json.Marshal(Message{Text: msg})
+	for _, v := range data {
+		dolar, _ := v.(map[string]interface{})
+		msg, _ := json.Marshal(Message{Text: fmt.Sprintf("%s %s, Compra: %s, Venta: %s", dolar["name"], dolar["date"], dolar["buy"], dolar["sell"])})
+		sendMessage(os.Getenv("WEBHOOK_URL"), msg)
+	}
+
+	os.Exit(0)
+}
+
+func sendMessage(w string, b []byte) {
+	req, err := http.NewRequest(http.MethodPost, w, bytes.NewBuffer(b))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+
+	if resp.StatusCode != 200 {
+		log.Fatal(resp.Status)
+	}
 }

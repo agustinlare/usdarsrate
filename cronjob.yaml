@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: dolar-by-chat
+  name: dolar-webhook
 spec:
   schedule: "0 13-18 * * 1-5"
   jobTemplate:
@@ -9,8 +9,8 @@ spec:
       template:
         spec:
           containers:
-          - name: dolar-by-chat
-            image: quay.io/agustinlare/dolarbychat
+          - name: dolar-webhook
+            image: quay.io/agustinlare/dolar-wh
             env:
             - name: ENDPOINT_URL
               value: ""
