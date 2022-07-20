@@ -13,7 +13,7 @@ spec:
             image: quay.io/agustinlare/dolar-wh
             env:
             - name: ENDPOINT_URL
-              value: ""
+              value: "https://www.dolarito.ar/api/frontend/quotations"
             - name: WEBHOOK_URL
               value: ""
             imagePullPolicy: IfNotPresent
