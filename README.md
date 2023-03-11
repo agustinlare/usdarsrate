@@ -1,4 +1,4 @@
-# Cotizacion Webhook Sender
+# Notifcacion USD to ARS
 
 Manda las cotizaciones de [Dolarito](https://www.dolarito.ar/) por webhook.
 
