@@ -3,7 +3,8 @@ kind: CronJob
 metadata:
   name: dolar-webhook
 spec:
-  schedule: "0 13-18 * * 1-5"
+  # UTC-0
+  schedule: "0 13-18 * * 1-5" 
   jobTemplate:
     spec:
       template:

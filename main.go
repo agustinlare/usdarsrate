@@ -1,18 +1,18 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"time"
-)
 
-type Message struct {
-	Text string `json:"text"`
-}
+	client "github.com/influxdata/influxdb1-client/v2"
+)
 
 func main() {
 	res, err := http.Get(os.Getenv("ENDPOINT_URL"))
@@ -28,30 +28,78 @@ func main() {
 
 	for _, v := range data {
 		dolar, _ := v.(map[string]interface{})
-		msg, _ := json.Marshal(Message{Text: fmt.Sprintf("%s %s, Compra: %s, Venta: %s", dolar["name"], dolar["date"], dolar["buy"], dolar["sell"])})
-		sendMessage(os.Getenv("WEBHOOK_URL"), msg)
+		message := fmt.Sprintf("%s %s, Compra: %s, Venta: %s", dolar["name"], dolar["date"], dolar["buy"], dolar["sell"])
+
+		sendNotification(os.Getenv("WEBHOOK_URL"), message)
+
+		influxdb, exists := os.LookupEnv("INFLUXDB_URL")
+
+		if exists && strings.Contains(dolar["name"].(string), "blue") {
+
+			err := writeToInfluxDB(dolar["sell"].(string), dolar["buy"].(string), influxdb)
+			if err != nil {
+				fmt.Println("Error writing to InfluxDB:", err)
+			}
+		}
 	}
 
 	os.Exit(0)
 }
 
-func sendMessage(w string, b []byte) {
-	req, err := http.NewRequest(http.MethodPost, w, bytes.NewBuffer(b))
+func writeToInfluxDB(sell string, buy string, influxdb string) error {
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr: influxdb,
+	})
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+
+	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
+		Database:  "dolar",
+		Precision: "s",
+	})
+	if err != nil {
+		return err
+	}
+
+	tags := map[string]string{"currency": "USD"}
+	fields := map[string]interface{}{
+		"sell": sell,
+		"buy":  buy,
+	}
+	p, err := client.NewPoint("exchange_rate", tags, fields, time.Now())
+	if err != nil {
+		return err
+	}
+
+	bp.AddPoint(p)
+
+	if err := c.Write(bp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func sendNotification(webhookUrl, message string) {
+	var field string = "text"
+
+	if strings.Contains(webhookUrl, "discord") {
+		field = "content"
+	}
+
+	formData := url.Values{
+		field: {message},
+	}
+	resp, err := http.PostForm(webhookUrl, formData)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	req.Header.Add("Content-Type", "application/json")
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-
-	if resp.StatusCode != 200 {
-		log.Fatal(resp.Status)
-	}
+	fmt.Println(string(body))
 }

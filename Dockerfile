@@ -1,8 +1,10 @@
 FROM golang:1.17.8-alpine3.15
 
-RUN mkdir -p dolarchat
-COPY . dolarchat
-WORKDIR dolarchat
+ENV ENDPOINT_URL=https://www.dolarito.ar/api/frontend/quotations
+
+RUN mkdir /usdrate
+COPY . /usdrate
+WORKDIR /usdrate
 
 RUN go mod download
 RUN go build
