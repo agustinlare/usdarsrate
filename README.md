@@ -5,7 +5,7 @@ Manda las cotizaciones de [Dolarito](https://www.dolarito.ar/) por webhook a Goo
 ## Envs
 
 *WEBHOOK_URL*: Obviamente el webhook que requiere para mandar la notificaicon
-*ENDPOINT_URL*: Por default uso https://www.dolarito.ar/api/frontend/quotations, pero se puede pisar.
+*ENDPOINT_URL*: Por default uso `https://www.dolarito.ar/api/frontend/quotations`, pero se puede pisar.
 *INFLUXDB_URL*: Ademas podes ponerlo en una db de influx para verlo por grafana.
 
 ## Docker / Kubernetes
