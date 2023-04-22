@@ -1,4 +1,4 @@
-# Notifcacion USD to ARS
+# USD-ARS Rate Notifications
 
 Manda las cotizaciones de [Dolarito](https://www.dolarito.ar/) por webhook a Google Meets y Discord son los unicos con que probe.
 
@@ -10,13 +10,13 @@ Manda las cotizaciones de [Dolarito](https://www.dolarito.ar/) por webhook a Goo
 
 ## Docker / Kubernetes
 
-docker run -e WEBHOOK_URL="<WEBHOOK>" -e ENDPOINT_URL="<ENDPOINT>" -e INFLUXDB_URL="<INFLUXDB_URL>" -itd quay.io/agustinlare/usdrate
+Se puede bajar tal cual esta y compilar con los valores deseados, utilizar el yaml que dejo aca para que corra como cronjob en kubernetes o usar esta imagen `quay.io/agustinlare/usdarsrate`.
+
+docker run -e WEBHOOK_URL="<WEBHOOK>" -e ENDPOINT_URL="<ENDPOINT>" -e INFLUXDB_URL="<INFLUXDB_URL>" -itd quay.io/agustinlare/usdarsrate
 
 ### Tags
 * x86: latest
 * Arm: arm
-
-Se puede bajar tal cual esta y compilar con los valores deseados, utilizar el yaml que dejo aca para que corra como cronjob en kubernetes o usar esta imagen `quay.io/agustinlare/dolar-wh`.
 
 ## InfluxDB
 
