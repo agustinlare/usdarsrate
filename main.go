@@ -1,105 +1,129 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
-	client "github.com/influxdata/influxdb1-client/v2"
+	"github.com/chromedp/cdproto/page"
+	"github.com/chromedp/chromedp"
 )
 
+type Image struct {
+	URL string `json:"url"`
+}
+
+type Embed struct {
+	Image Image `json:"image"`
+}
+
+type Message struct {
+	Username string  `json:"username"`
+	Embeds   []Embed `json:"embeds"`
+}
+
 func main() {
-	res, err := http.Get(os.Getenv("ENDPOINT_URL"))
+	webhookURL := os.Getenv("DISCORD_WEBHOOK_URL")
+
+	takeScreenshot()
+
+	imageFile, err := ioutil.ReadFile("screenshot.png")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer res.Body.Close()
-
-	decoder := json.NewDecoder(res.Body)
-	var data map[string]interface{}
-	_ = decoder.Decode(&data)
-
-	for _, v := range data {
-		dolar, _ := v.(map[string]interface{})
-		message := fmt.Sprintf("%s %s, Compra: %s, Venta: %s", dolar["name"], dolar["date"], dolar["buy"], dolar["sell"])
-
-		sendNotification(os.Getenv("WEBHOOK_URL"), message)
-
-		influxdb, exists := os.LookupEnv("INFLUXDB_URL")
-
-		if exists && strings.Contains(dolar["name"].(string), "blue") {
-
-			err := writeToInfluxDB(dolar["sell"].(string), dolar["buy"].(string), influxdb)
-			if err != nil {
-				fmt.Println("Error writing to InfluxDB:", err)
-			}
-		}
+	message := Message{
+		Username: "To the moon",
+		Embeds: []Embed{
+			{
+				Image: Image{
+					URL: "attachment://screenshot.png",
+				},
+			},
+		},
 	}
 
-	os.Exit(0)
-}
-
-func writeToInfluxDB(sell string, buy string, influxdb string) error {
-	c, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr: influxdb,
-	})
+	jsonData, err := json.Marshal(message)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-	defer c.Close()
 
-	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:  "dolar",
-		Precision: "s",
-	})
+	body := new(bytes.Buffer)
+
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormField("payload_json")
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
+	part.Write(jsonData)
 
-	tags := map[string]string{"currency": "USD"}
-	fields := map[string]interface{}{
-		"sell": sell,
-		"buy":  buy,
-	}
-	p, err := client.NewPoint("exchange_rate", tags, fields, time.Now())
+	part, err = writer.CreateFormFile("file", "screenshot.png")
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
+	part.Write(imageFile)
 
-	bp.AddPoint(p)
-
-	if err := c.Write(bp); err != nil {
-		return err
+	err = writer.Close()
+	if err != nil {
+		log.Fatal(err)
 	}
+	contentType := writer.FormDataContentType()
 
-	return nil
-}
-
-func sendNotification(webhookUrl, message string) {
-	var field string = "text"
-
-	if strings.Contains(webhookUrl, "discord") {
-		field = "content"
+	req, err := http.NewRequest("POST", webhookURL, body)
+	if err != nil {
+		log.Fatal(err)
 	}
+	req.Header.Set("Content-Type", contentType)
 
-	formData := url.Values{
-		field: {message},
-	}
-	resp, err := http.PostForm(webhookUrl, formData)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
+	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(body))
+	log.Println(string(responseBody))
+}
+
+func takeScreenshot() {
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	var buf []byte
+	err := chromedp.Run(ctx,
+		chromedp.Navigate("https://dolarhoy.com/i/cotizaciones/dolar-blue"),
+		chromedp.Sleep(2*time.Second),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			var err error
+			buf, err = page.CaptureScreenshot().WithQuality(90).WithClip(&page.Viewport{
+				X:      0,
+				Y:      0,
+				Width:  330,
+				Height: 260,
+				Scale:  1,
+			}).Do(ctx)
+			if err != nil {
+				return err
+			}
+			return nil
+		}),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = ioutil.WriteFile("screenshot.png", buf, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
