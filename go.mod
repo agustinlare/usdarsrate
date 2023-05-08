@@ -3,7 +3,7 @@ module github.com/main
 go 1.17
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20230419194459-b5ff65bc57a3
+	github.com/chromedp/cdproto v0.0.0-20230506233603-4ea4c6dc2e5b
 	github.com/influxdata/influxdb1-client v0.0.0-20220302092344-a9ab5670611c
 )
 
