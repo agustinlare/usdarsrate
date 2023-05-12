@@ -1,12 +1,12 @@
 # USD-ARS Rate Notifications
 
-Manda las cotizaciones de [Dolarito](https://www.dolarito.ar/) por webhook a Google Meets y Discord son los unicos con que probe.
+Manda las cotizaciones de [ambito financiero](https://www.ambito.com/contenidos/dolar.html) por webhook a Google Meets y Discord son los unicos con que probe.
 
 ## Envs
 
 *WEBHOOK_URL*: Obviamente el webhook que requiere para mandar la notificaicon
-*ENDPOINT_URL*: Por default uso `https://www.dolarito.ar/api/frontend/quotations`, pero se puede pisar.
-*INFLUXDB_URL*: Ademas podes ponerlo en una db de influx para verlo por grafana.
+*ENDPOINT_URL*: https://mercados.ambito.com/dolar/$TIPO_DOLAR/variacion (informal, oficial, etc)
+*INFLUXDB_URL*: Ademas podes ponerlo en una db de influx para verlo por grafana. (NOW WORKING)
 
 ## Docker / Kubernetes
 
@@ -18,7 +18,7 @@ docker run -e WEBHOOK_URL="<WEBHOOK>" -e ENDPOINT_URL="<ENDPOINT>" -e INFLUXDB_U
 * x86: latest
 * Arm: arm
 
-## InfluxDB
+## InfluxDB NOT WORKING
 
 Conectado al influxdb estos son los comandos para crear la base de datos
 
